@@ -29,9 +29,12 @@ ext {
 	lombok_version = "1.18.12"
 	j_text_utils_version = "0.3.4"
 	spring_cloud_contract_wiremock_version = "2.2.2.RELEASE"
+	okta_spring_boot_starter_version = "1.2.1"
 }
 
 dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation "com.okta.spring:okta-spring-boot-starter:${okta_spring_boot_starter_version}"
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation "com.amazonaws:aws-java-sdk:${aws_java_sdk_version}"
 	compile "io.swagger:swagger-annotations:${swagger_annotations_version}"

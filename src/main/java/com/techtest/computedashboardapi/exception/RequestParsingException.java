@@ -6,4 +6,8 @@ public class RequestParsingException extends Exception {
         super(cause);
     }
 
+    public RequestParsingException(String errorMessage) {
+        super(errorMessage);
+    }
+
 }

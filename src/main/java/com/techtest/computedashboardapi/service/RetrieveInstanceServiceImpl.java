@@ -9,6 +9,7 @@ import com.techtest.computedashboardapi.exception.CommunicationFailedException;
 import com.techtest.computedashboardapi.exception.RequestParsingException;
 import com.techtest.computedashboardapi.exception.ResponseParsingException;
 import com.techtest.computedashboardapi.mapper.EC2InstanceResponseMapper;
+import com.techtest.computedashboardapi.model.request.PageRequest;
 import com.techtest.computedashboardapi.model.response.EC2InstanceResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -19,6 +20,7 @@ import software.amazon.awssdk.services.ec2.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -35,10 +37,10 @@ public class RetrieveInstanceServiceImpl implements RetrieveInstanceService {
         this.ec2ClientProvider = ec2ClientProvider;
     }
 
-    public List<EC2InstanceResponse> getEc2Instances(String region) throws RequestParsingException, ResponseParsingException, CommunicationFailedException {
+    public List<EC2InstanceResponse> getEc2Instances(String region, PageRequest pageRequest) throws RequestParsingException, ResponseParsingException, CommunicationFailedException {
 
         Ec2Client ec2Client = ec2ClientProvider.getObject(getRegionByName(region));
-        List<Instance> instancesResponse = getEC2Instances(ec2Client);
+        List<Instance> instancesResponse = getEC2Instances(ec2Client, pageRequest);
         log.info("Found {} running ec2 instances", instancesResponse.size());
 
         return mapper.mapEc2InstanceResponse(instancesResponse);
@@ -53,25 +55,38 @@ public class RetrieveInstanceServiceImpl implements RetrieveInstanceService {
         }
     }
 
-    private List<Instance> getEC2Instances(Ec2Client ec2Client) throws CommunicationFailedException {
+    private List<Instance> getEC2Instances(Ec2Client ec2Client, PageRequest pageRequest) throws CommunicationFailedException {
 
         String nextToken = null;
+        int pageCounter = 1;
         List<Instance> result = new ArrayList<>();
 
         try {
 
             do {
-                DescribeInstancesRequest request = DescribeInstancesRequest.builder().maxResults(6).nextToken(nextToken).build();
+
+                DescribeInstancesRequest request = DescribeInstancesRequest.builder().maxResults(pageRequest.getSize()).nextToken(nextToken).build();
                 DescribeInstancesResponse response = ec2Client.describeInstances(request);
 
-                for (Reservation reservation : response.reservations()) {
-                    for (Instance instance : reservation.instances()) {
-                        if (instance.state().code().equals(RUNNING_STATE_CODE)){
-                            result.add(instance);
-                        }
-                    }
+                if (pageCounter < pageRequest.getPage()) {
+                    nextToken = response.nextToken();
+                    pageCounter++;
+                    continue;
                 }
+
+                result.addAll(response.reservations().stream()
+                        .map(Reservation::instances)
+                        .flatMap(List::stream)
+                        .filter(instance -> instance.state().code().equals(RUNNING_STATE_CODE))
+                        .collect(Collectors.toList()));
+
                 nextToken = response.nextToken();
+                pageCounter++;
+
+                if (pageCounter > pageRequest.getPage()){
+                    break;
+                }
+
             } while (nextToken != null);
 
         } catch (Ec2Exception e) {

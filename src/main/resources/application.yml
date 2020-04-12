@@ -21,6 +21,7 @@ aws:
   accessKeyId: *
   secretAccessKey: *
 
+
 #TODO: enable SSL and sign requests/responses
 #server.ssl.enabled=true
 #server.ssl.key-store=classpath:store.jks

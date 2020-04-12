@@ -3,9 +3,13 @@ package com.techtest.computedashboardapi.controller;
 import com.techtest.computedashboardapi.exception.CommunicationFailedException;
 import com.techtest.computedashboardapi.exception.RequestParsingException;
 import com.techtest.computedashboardapi.model.request.PageRequest;
+import com.techtest.computedashboardapi.model.request.SortAttributes;
+import com.techtest.computedashboardapi.model.request.SortDirection;
+import com.techtest.computedashboardapi.model.request.SortRequest;
 import com.techtest.computedashboardapi.model.response.EC2InstanceResponse;
 import com.techtest.computedashboardapi.service.PrintTableService;
 import com.techtest.computedashboardapi.service.RetrieveInstanceService;
+import com.techtest.computedashboardapi.service.SortService;
 import com.techtest.computedashboardapi.utils.TestLogging;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -56,6 +60,9 @@ class EC2InstanceControllerTest extends TestLogging {
     @MockBean
     private PrintTableService printTableService;
 
+    @MockBean
+    private SortService sortService;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -79,19 +86,24 @@ class EC2InstanceControllerTest extends TestLogging {
     }
 
     @Test
-    @DisplayName("Request with valid region and valid page request must be accepted")
+    @DisplayName("Request with valid region, valid page and valid sorting parameters request must be accepted")
     void getEc2Instances_validRegion_validPageRequest_returns200() throws Exception {
         // given
         List<EC2InstanceResponse> ec2InstanceResponseList = new ArrayList<EC2InstanceResponse>();
         int page_number = 1;
         int page_size = 6;
         ArgumentCaptor<PageRequest> pageRequestArgumentCaptor = ArgumentCaptor.forClass(PageRequest.class);
+        ArgumentCaptor<SortRequest> sortRequestArgumentCaptor = ArgumentCaptor.forClass(SortRequest.class);
         given(retrieveInstanceService.getEc2Instances(eq(DEFAULT_REGION_NAME), any(PageRequest.class))).willReturn(ec2InstanceResponseList);
+        given(sortService.sort(eq(ec2InstanceResponseList), any(SortRequest.class))).willReturn(ec2InstanceResponseList);
 
         // when then
-        mockMvc.perform(get(PATH).param(REGION, DEFAULT_REGION_NAME)
-        .param("page", String.valueOf(page_number))
-        .param("size", String.valueOf(page_size)))
+        mockMvc.perform(get(PATH)
+                .param(REGION, DEFAULT_REGION_NAME)
+                .param("page", String.valueOf(page_number))
+                .param("size", String.valueOf(page_size))
+                .param("sort.attr", SortAttributes.state.name())
+                .param("sort.order", SortDirection.desc.name()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON))
         .andReturn();
@@ -99,6 +111,9 @@ class EC2InstanceControllerTest extends TestLogging {
         verify(retrieveInstanceService).getEc2Instances(eq(DEFAULT_REGION_NAME), pageRequestArgumentCaptor.capture());
         assertThat(pageRequestArgumentCaptor.getValue().getPage()).isEqualTo(page_number);
         assertThat(pageRequestArgumentCaptor.getValue().getSize()).isEqualTo(page_size);
+        verify(sortService).sort(eq(ec2InstanceResponseList), sortRequestArgumentCaptor.capture());
+        assertThat(sortRequestArgumentCaptor.getValue().getSort().getAttr()).isEqualTo(SortAttributes.state.name());
+        assertThat(sortRequestArgumentCaptor.getValue().getSort().getOrder()).isEqualTo(SortDirection.desc.name());
         verify(printTableService).print(ec2InstanceResponseList);
 
         verify(appender, atLeastOnce()).doAppend(argumentCaptor.capture());
@@ -140,13 +155,35 @@ class EC2InstanceControllerTest extends TestLogging {
     void getEc2Instances_validRegion_invalidPageRequest_returns400(String pageSize, String pageNumber) throws Exception {
 
         // when then
-
         mockMvc.perform(get(PATH).param(REGION, DEFAULT_REGION_NAME)
                 .param("page", pageNumber)
                 .param("size", pageSize))
                 .andExpect(status().isBadRequest());
 
         verify(retrieveInstanceService, never()).getEc2Instances(eq(DEFAULT_REGION_NAME), any(PageRequest.class));
+        verify(printTableService, never()).print(anyList());
+
+        verify(appender, atLeastOnce()).doAppend(argumentCaptor.capture());
+        assertThat(messageHasBeenLogged(capture(), format(LOG_MESSAGE, DEFAULT_REGION_NAME))).isTrue();
+    }
+
+    @DisplayName("Request with invalid sorting parameters is a bad request")
+    @ParameterizedTest(name = "Get 400 for sorting parameters with attribute: {0} and order: {1}")
+    @CsvSource({",acs", "id,5", "namety,DESC", "name,"})
+    void getEc2Instances_validRegion_invalidSortRequest_returns400(String sortAttr, String sortOrder) throws Exception {
+        // given
+        List<EC2InstanceResponse> ec2InstanceResponseList = new ArrayList<EC2InstanceResponse>();
+        given(retrieveInstanceService.getEc2Instances(eq(DEFAULT_REGION_NAME), any(PageRequest.class))).willReturn(ec2InstanceResponseList);
+        given(sortService.sort(eq(ec2InstanceResponseList), any(SortRequest.class))).willThrow(new RequestParsingException("Invalid sorting params"));
+
+        // when then
+        mockMvc.perform(get(PATH).param(REGION, DEFAULT_REGION_NAME)
+        .param("sort.attr", sortAttr)
+                .param("sort.order", sortOrder))
+                .andExpect(status().isBadRequest());
+
+        verify(retrieveInstanceService).getEc2Instances(eq(DEFAULT_REGION_NAME), any(PageRequest.class));
+        verify(sortService).sort(eq(ec2InstanceResponseList), any(SortRequest.class));
         verify(printTableService, never()).print(anyList());
 
         verify(appender, atLeastOnce()).doAppend(argumentCaptor.capture());

@@ -47,6 +47,8 @@ dependencies {
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
+	compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.4'
+	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
 	implementation "org.springframework.security:spring-security-test:${spring_security_test_version}"
 	testCompile "org.springframework.cloud:spring-cloud-contract-wiremock:${spring_cloud_contract_wiremock_version}"
 	testImplementation "org.mockito:mockito-core:${mockito_core_version}"

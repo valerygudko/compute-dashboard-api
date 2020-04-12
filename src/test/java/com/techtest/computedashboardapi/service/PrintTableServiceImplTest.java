@@ -47,6 +47,7 @@ class PrintTableServiceImplTest {
         //then
         assertThat(outContent.toString()).contains(HEADER_WITH_DELIMITERS);
     }
+
     @Test
     @DisplayName("Table with header and data is printed if non-empty list is passed")
     void print_instancesList_tableWithInstancesPrinted() {

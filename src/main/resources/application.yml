@@ -18,9 +18,8 @@ okta:
 
 #TODO: Try make use of IAM role on EC2 instance
 aws:
-  key:
-    access: *
-    secret: *
+  accessKeyId: *
+  secretAccessKey: *
 
 #TODO: enable SSL and sign requests/responses
 #server.ssl.enabled=true

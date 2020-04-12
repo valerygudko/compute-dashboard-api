@@ -1,37 +1,32 @@
 package com.techtest.computedashboardapi.configuration;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.ec2.Ec2Client;
 
 @Configuration
 public class AwsConfiguration {
 
-    @Value("${aws.key.access}")
-    public String AWS_ACCESS_KEY;
+//    @Value("${aws.access.key.id}")
+//    public String AWS_ACCESS_KEY_ID;
+//
+//    @Value("${aws.secret.access.key}")
+//    public String AWS_SECRET_ACCESS_KEY;
 
-    @Value("${aws.key.secret}")
-    public String AWS_SECRET_KEY;
-
-    @Bean
-    public AWSCredentials awsCredentials() {
-        return new BasicAWSCredentials(AWS_ACCESS_KEY, AWS_SECRET_KEY);
-    }
+//    @Bean
+//    public AWSCredentials awsCredentials() {
+//        return new BasicAWSCredentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY);
+//    }
 
     @Bean
     @Scope(BeanDefinition.SCOPE_PROTOTYPE)
-    public AmazonEC2 ec2Client(String region) {
-        return AmazonEC2ClientBuilder
-                .standard()
-                .withCredentials(new AWSStaticCredentialsProvider(awsCredentials()))
-                .withRegion(region)
+    public Ec2Client ec2Client(Region region) {
+        return Ec2Client.builder().credentialsProvider(DefaultCredentialsProvider.create())
+                .region(region)
                 .build();
     }
 

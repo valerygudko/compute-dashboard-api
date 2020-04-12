@@ -1,22 +1,27 @@
 package com.techtest.computedashboardapi.mapper;
 
-import com.amazonaws.services.ec2.model.*;
 import com.techtest.computedashboardapi.exception.ResponseParsingException;
 import com.techtest.computedashboardapi.model.response.EC2InstanceResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import software.amazon.awssdk.services.ec2.model.*;
 
+import java.time.ZoneId;
 import java.util.List;
 
 import static com.techtest.computedashboardapi.utils.TestConstants.*;
+import static java.time.Instant.ofEpochSecond;
+import static java.time.LocalDateTime.ofInstant;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class EC2InstanceResponseMapperTest {
+
+    private static final long SECONDS_SINCE_EPOCH = 1_484_063_246L;
 
     private EC2InstanceResponseMapper testObj = new EC2InstanceResponseMapper();
 
@@ -29,14 +34,15 @@ class EC2InstanceResponseMapperTest {
         List<EC2InstanceResponse> expectedInstanceResponse = singletonList(EC2InstanceResponse.builder()
                 .id(ID)
                 .name(NAME)
-                .type(TYPE)
+                .type(InstanceType
+                        .fromValue(INSTANCE_TYPE).name())
                 .state(STATE)
                 .monitoring(MONITORING)
                 .az(AZ)
                 .publicIP(PUBLIC_IP)
                 .privateIP(PRIVATE_IP)
                 .subnetId(SUBNET_ID)
-                .launchTime(LAUNCH_TIME)
+                .launchTime(ofInstant(ofEpochSecond(SECONDS_SINCE_EPOCH), ZoneId.of(UTC)))
                 .build());
 
         // when
@@ -51,39 +57,37 @@ class EC2InstanceResponseMapperTest {
     @DisplayName("When AWS instance object has some data missing then ResponseParsingException thrown")
     void mapEc2InstanceResponse_noDataToMapResponse_ResponseParsingExceptionThrown() {
         // given
-        Instance instance = new Instance();
+        Instance instance = Instance.builder().build();
 
         //when then
         assertThrows(ResponseParsingException.class, () -> testObj.mapEc2InstanceResponse(singletonList(instance)));
     }
 
     private Instance givenAWSInstance(){
-        Tag tag = new Tag();
-        tag.setKey(NAME_KEY);
-        tag.setValue(NAME);
 
-        InstanceState instanceState = new InstanceState();
-        instanceState.setName(STATE);
+        return Instance.builder()
+                .instanceId(ID)
+                .tags(Tag.builder()
+                        .key(NAME_KEY)
+                        .value(NAME)
+                        .build())
+                .instanceType(InstanceType
+                        .fromValue(INSTANCE_TYPE))
+                .state(InstanceState.builder()
+                        .name(STATE)
+                        .build())
+                .monitoring(Monitoring.builder()
+                        .state(MONITORING)
+                        .build())
+                .placement(Placement.builder()
+                        .availabilityZone(AZ)
+                        .build())
+                .publicIpAddress(PUBLIC_IP)
+                .privateIpAddress(PRIVATE_IP)
+                .subnetId(SUBNET_ID)
+                .launchTime(ofEpochSecond(SECONDS_SINCE_EPOCH))
+                .build();
 
-        Monitoring monitoring = new Monitoring();
-        monitoring.setState(MONITORING);
-
-        Placement placement = new Placement();
-        placement.setAvailabilityZone(AZ);
-
-        Instance instance = new Instance();
-        instance.setInstanceId(ID);
-        instance.setTags(singletonList(tag));
-        instance.setInstanceType(TYPE);
-        instance.setState(instanceState);
-        instance.setMonitoring(monitoring);
-        instance.setPlacement(placement);
-        instance.setPublicIpAddress(PUBLIC_IP);
-        instance.setPrivateIpAddress(PRIVATE_IP);
-        instance.setSubnetId(SUBNET_ID);
-        instance.setLaunchTime(LAUNCH_TIME);
-
-        return instance;
     }
 
 }

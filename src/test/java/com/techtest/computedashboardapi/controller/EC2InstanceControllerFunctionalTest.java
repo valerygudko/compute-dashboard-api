@@ -11,7 +11,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static com.amazonaws.regions.Regions.DEFAULT_REGION;
 import static com.techtest.computedashboardapi.utils.TestConstants.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -35,7 +34,7 @@ class EC2InstanceControllerFunctionalTest {
     void getEc2Instances_validRegionRequest_returns200() throws Exception {
         // given when then
         mockMvc.perform(get(PATH)
-                .param(REGION, DEFAULT_REGION.getName())
+                .param(REGION, DEFAULT_REGION_NAME)
                 .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();

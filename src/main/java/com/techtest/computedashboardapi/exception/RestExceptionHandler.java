@@ -25,8 +25,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return buildResponseEntity(new ResponseError(INTERNAL_SERVER_ERROR, ERROR_CODE_COMMUNICATION_FAILED, ex));
     }
 
-    @ExceptionHandler(RequestParsingException.class)
-    protected ResponseEntity<Object> handleRequestParsingException(RequestParsingException ex) {
+    @ExceptionHandler({RequestParsingException.class, IllegalArgumentException.class})
+    protected ResponseEntity<Object> handleRequestParsingException(Exception ex) {
         log.error("Error parsing the request parameter {}", ex);
         return buildResponseEntity(new ResponseError(BAD_REQUEST, ERROR_CODE_REQUEST_PARSING, ex));
     }

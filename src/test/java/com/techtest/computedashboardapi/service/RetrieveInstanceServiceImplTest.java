@@ -1,8 +1,5 @@
 package com.techtest.computedashboardapi.service;
 
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.model.*;
 import com.techtest.computedashboardapi.exception.CommunicationFailedException;
 import com.techtest.computedashboardapi.exception.RequestParsingException;
 import com.techtest.computedashboardapi.exception.ResponseParsingException;
@@ -17,6 +14,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.ObjectProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.ec2.Ec2Client;
+import software.amazon.awssdk.services.ec2.model.*;
 
 import java.util.List;
 
@@ -28,26 +28,25 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class RetrieveInstanceServiceImplTest extends TestLogging {
 
     private static final String LOG_MESSAGE = "Found %d running ec2 instances";
-    private static final String DEFAULT_REGION_NAME = Regions.DEFAULT_REGION.getName();
+    private static final String DEFAULT_REGION_NAME = Region.US_WEST_2.toString();
 
     @Mock
     private EC2InstanceResponseMapper ec2InstanceResponseMapper;
 
     @Mock
-    private ObjectProvider<AmazonEC2> amazonEC2ObjectProvider;
+    private ObjectProvider<Ec2Client> amazonEC2ObjectProvider;
 
     @Mock
-    private AmazonEC2 amazonEC2;
+    private Ec2Client amazonEC2;
 
     @Mock
-    private DescribeInstancesResult describeInstancesResult;
+    private DescribeInstancesResponse describeInstancesResponse;
 
     @Mock
     private Reservation reservation;
@@ -74,14 +73,14 @@ class RetrieveInstanceServiceImplTest extends TestLogging {
         //given
         Integer RUNNING_STATE_CODE = 16;
 
-        given(amazonEC2ObjectProvider.getObject(DEFAULT_REGION_NAME)).willReturn(amazonEC2);
+        given(amazonEC2ObjectProvider.getObject(Region.of(DEFAULT_REGION_NAME))).willReturn(amazonEC2);
         given(ec2InstanceResponseMapper.mapEc2InstanceResponse(anyList())).willReturn(ec2InstanceResponseList);
-        given(amazonEC2.describeInstances(any(DescribeInstancesRequest.class))).willReturn(describeInstancesResult);
-        given(describeInstancesResult.getReservations()).willReturn(singletonList(reservation));
+        given(amazonEC2.describeInstances(any(DescribeInstancesRequest.class))).willReturn(describeInstancesResponse);
+        given(describeInstancesResponse.reservations()).willReturn(singletonList(reservation));
         List<Instance> instanceList = singletonList(instance);
-        given(reservation.getInstances()).willReturn(instanceList);
-        given(instance.getState()).willReturn(instanceState);
-        given(instanceState.getCode()).willReturn(RUNNING_STATE_CODE);
+        given(reservation.instances()).willReturn(instanceList);
+        given(instance.state()).willReturn(instanceState);
+        given(instanceState.code()).willReturn(RUNNING_STATE_CODE);
 
         //when
         List<EC2InstanceResponse> result = testObj.getEc2Instances(DEFAULT_REGION_NAME);
@@ -98,12 +97,12 @@ class RetrieveInstanceServiceImplTest extends TestLogging {
     @DisplayName("When there is no EC2 instances found for valid region empty list should be returned")
     void getEc2Instances_validRegion_noInstancesFound_emptyListOfInstancesReturned() throws RequestParsingException, CommunicationFailedException, ResponseParsingException {
         //given
-        given(amazonEC2ObjectProvider.getObject(DEFAULT_REGION_NAME)).willReturn(amazonEC2);
+        given(amazonEC2ObjectProvider.getObject(Region.of(DEFAULT_REGION_NAME))).willReturn(amazonEC2);
         given(ec2InstanceResponseMapper.mapEc2InstanceResponse(anyList())).willReturn(ec2InstanceResponseList);
-        given(amazonEC2.describeInstances(any(DescribeInstancesRequest.class))).willReturn(describeInstancesResult);
-        given(describeInstancesResult.getReservations()).willReturn(singletonList(reservation));
+        given(amazonEC2.describeInstances(any(DescribeInstancesRequest.class))).willReturn(describeInstancesResponse);
+        given(describeInstancesResponse.reservations()).willReturn(singletonList(reservation));
         List<Instance> instanceList = emptyList();
-        given(reservation.getInstances()).willReturn(instanceList);
+        given(reservation.instances()).willReturn(instanceList);
 
         //when
         List<EC2InstanceResponse> result = testObj.getEc2Instances(DEFAULT_REGION_NAME);
@@ -122,14 +121,14 @@ class RetrieveInstanceServiceImplTest extends TestLogging {
         //given
         Integer PENDING_STATE_CODE = 0;
 
-        given(amazonEC2ObjectProvider.getObject(DEFAULT_REGION_NAME)).willReturn(amazonEC2);
+        given(amazonEC2ObjectProvider.getObject(Region.of(DEFAULT_REGION_NAME))).willReturn(amazonEC2);
         given(ec2InstanceResponseMapper.mapEc2InstanceResponse(anyList())).willReturn(ec2InstanceResponseList);
-        given(amazonEC2.describeInstances(any(DescribeInstancesRequest.class))).willReturn(describeInstancesResult);
-        given(describeInstancesResult.getReservations()).willReturn(singletonList(reservation));
+        given(amazonEC2.describeInstances(any(DescribeInstancesRequest.class))).willReturn(describeInstancesResponse);
+        given(describeInstancesResponse.reservations()).willReturn(singletonList(reservation));
         List<Instance> instanceList = singletonList(instance);
-        given(reservation.getInstances()).willReturn(instanceList);
-        given(instance.getState()).willReturn(instanceState);
-        given(instanceState.getCode()).willReturn(PENDING_STATE_CODE);
+        given(reservation.instances()).willReturn(instanceList);
+        given(instance.state()).willReturn(instanceState);
+        given(instanceState.code()).willReturn(PENDING_STATE_CODE);
 
         //when
         List<EC2InstanceResponse> result = testObj.getEc2Instances(DEFAULT_REGION_NAME);

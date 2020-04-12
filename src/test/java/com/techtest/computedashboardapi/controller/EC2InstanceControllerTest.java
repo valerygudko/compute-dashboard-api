@@ -1,7 +1,5 @@
 package com.techtest.computedashboardapi.controller;
 
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.ec2.model.AmazonEC2Exception;
 import com.techtest.computedashboardapi.exception.CommunicationFailedException;
 import com.techtest.computedashboardapi.exception.RequestParsingException;
 import com.techtest.computedashboardapi.model.response.EC2InstanceResponse;
@@ -21,6 +19,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import software.amazon.awssdk.services.ec2.model.Ec2Exception;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +44,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class EC2InstanceControllerTest extends TestLogging {
 
     private static final String PATH = "/ec2-instances";
-    private static final String DEFAULT_REGION_NAME = Regions.DEFAULT_REGION.getName();
     private static final String REGION = "region";
     private static final String LOG_MESSAGE = "Calling the service to retrieve info from AWS for region %s";
 
@@ -110,7 +108,7 @@ class EC2InstanceControllerTest extends TestLogging {
     @DisplayName("500 exception returned when AmazonEC2Exception thrown")
     void getEc2Instances_AmazonEC2ExceptionThrown_returns500() throws Exception {
         // given
-        given(retrieveInstanceService.getEc2Instances(DEFAULT_REGION_NAME)).willThrow(new CommunicationFailedException(new AmazonEC2Exception("Invalid credentials")));
+        given(retrieveInstanceService.getEc2Instances(DEFAULT_REGION_NAME)).willThrow(new CommunicationFailedException(Ec2Exception.builder().message("Error").build()));
 
         // when then
         mockMvc.perform(get(PATH).param(REGION, DEFAULT_REGION_NAME))

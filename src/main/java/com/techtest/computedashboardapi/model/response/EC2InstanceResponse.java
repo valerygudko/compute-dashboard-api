@@ -3,7 +3,7 @@ package com.techtest.computedashboardapi.model.response;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -27,5 +27,5 @@ public class EC2InstanceResponse {
 
     private final String subnetId;
 
-    private final Date launchTime;
+    private final LocalDateTime launchTime;
 }

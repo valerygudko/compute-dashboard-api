@@ -54,7 +54,7 @@ class PrintTableServiceImplTest {
         List<EC2InstanceResponse> responseList = singletonList(EC2InstanceResponse.builder()
                 .id(ID)
                 .name(NAME)
-                .type(TYPE)
+                .type(INSTANCE_TYPE)
                 .state(STATE)
                 .monitoring(MONITORING)
                 .az(AZ)
@@ -63,7 +63,7 @@ class PrintTableServiceImplTest {
                 .subnetId(SUBNET_ID)
                 .launchTime(LAUNCH_TIME)
                 .build());
-        String[] instanceAttributes = {ID, NAME, TYPE, STATE, MONITORING, AZ, PUBLIC_IP, PRIVATE_IP, SUBNET_ID, LAUNCH_TIME.toString()};
+        String[] instanceAttributes = {ID, NAME, INSTANCE_TYPE, STATE, MONITORING, AZ, PUBLIC_IP, PRIVATE_IP, SUBNET_ID, LAUNCH_TIME.toString()};
 
         //when
         testObj.print(responseList);

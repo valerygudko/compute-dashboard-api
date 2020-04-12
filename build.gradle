@@ -26,16 +26,15 @@ ext {
 	set('springCloudVersion', "Hoxton.SR3")
 	swagger_annotations_version = "1.5.9"
 	aws_java_sdk_version = "1.11.336"
-	lombok_version = "1.18.12"
 	j_text_utils_version = "0.3.4"
 	spring_cloud_contract_wiremock_version = "2.2.2.RELEASE"
 	okta_spring_boot_starter_version = "1.2.1"
+	spring_security_test_version = "4.2.3.RELEASE"
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation "com.okta.spring:okta-spring-boot-starter:${okta_spring_boot_starter_version}"
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation "com.okta.spring:okta-spring-boot-starter:${okta_spring_boot_starter_version}"
 	implementation "com.amazonaws:aws-java-sdk:${aws_java_sdk_version}"
 	compile "io.swagger:swagger-annotations:${swagger_annotations_version}"
 	compile "org.springframework.boot:spring-boot-starter-actuator"
@@ -47,6 +46,7 @@ dependencies {
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
+	implementation "org.springframework.security:spring-security-test:${spring_security_test_version}"
 	testCompile "org.springframework.cloud:spring-cloud-contract-wiremock:${spring_cloud_contract_wiremock_version}"
 }
 

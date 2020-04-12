@@ -6,39 +6,41 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static com.amazonaws.regions.Regions.DEFAULT_REGION;
 import static com.techtest.computedashboardapi.utils.TestConstants.*;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static java.lang.String.format;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureWireMock(port = 0)
 @AutoConfigureMockMvc
-class EC2InstanceControllerFunctionalTest {
+public class WebControllerFunctionalTest {
 
-    private static final String PATH = "/ec2-instances";
-    private static final String REGION = "region";
+    private static final String REDIRECT_URL_TO_OKTA = "http://localhost/oauth2/authorization/okta";
+    private static final String HOME_PATH = "/";
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    @DisplayName("Valid request must be accepted")
+    @DisplayName("All requests must be redirected to Okta for oauth")
+    void home_unauthorizedRequestsNotPermitted() throws Exception {
+        mockMvc.perform(get(HOME_PATH))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(REDIRECT_URL_TO_OKTA));
+    }
+
+    @Test
     @WithMockUser(username = USER_NAME, password = PASSWORD, roles = USER_ROLE)
-    void getEc2Instances_validRegionRequest_returns200() throws Exception {
-        // given when then
-        mockMvc.perform(get(PATH)
-                .param(REGION, DEFAULT_REGION.getName())
-                .contentType(APPLICATION_JSON))
+    @DisplayName("Authorized user can access home api")
+    void home_authorizedRequestToHomeApi_returnsPersonalGreeting() throws Exception {
+        mockMvc.perform(get(HOME_PATH))
                 .andExpect(status().isOk())
-                .andReturn();
+        .andExpect(content().string(format("Welcome, %s", USER_NAME)));
     }
 
 }

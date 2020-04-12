@@ -1,0 +1,28 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /compute-dashboard-api/v1
+
+management:
+  server:
+    port: 8081
+  endpoints:
+    web:
+      base-path: /
+
+okta:
+  oauth2:
+    issuer: *
+    client-id: *
+    client-secret: *
+
+#TODO: Try make use of IAM role on EC2 instance
+aws:
+  key:
+    access: *
+    secret: *
+
+#TODO: enable SSL and sign requests/responses
+#server.ssl.enabled=true
+#server.ssl.key-store=classpath:store.jks
+#server.ssl.key-password=secret

@@ -14,4 +14,7 @@ public class TestConstants {
     public static final String PRIVATE_IP = "0.0.0.1";
     public static final String SUBNET_ID = "Subnet_id";
     public static final Date LAUNCH_TIME = new Date();
+    public static final String USER_NAME = "user1";
+    public static final String PASSWORD = "pwd";
+    public static final String USER_ROLE = "USER";
 }

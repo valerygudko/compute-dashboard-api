@@ -34,8 +34,7 @@ class EC2InstanceResponseMapperTest {
         List<EC2InstanceResponse> expectedInstanceResponse = singletonList(EC2InstanceResponse.builder()
                 .id(ID)
                 .name(NAME)
-                .type(InstanceType
-                        .fromValue(INSTANCE_TYPE).name())
+                .type(INSTANCE_TYPE)
                 .state(STATE)
                 .monitoring(MONITORING)
                 .az(AZ)
@@ -71,8 +70,7 @@ class EC2InstanceResponseMapperTest {
                         .key(NAME_KEY)
                         .value(NAME)
                         .build())
-                .instanceType(InstanceType
-                        .fromValue(INSTANCE_TYPE))
+                .instanceType(INSTANCE_TYPE)
                 .state(InstanceState.builder()
                         .name(STATE)
                         .build())

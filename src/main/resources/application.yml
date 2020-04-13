@@ -1,14 +1,13 @@
 server:
-  port: 8080
+  port: 8443
   servlet:
     context-path: /compute-dashboard-api/v1
-
-management:
-  server:
-    port: 8081
-  endpoints:
-    web:
-      base-path: /
+  ssl:
+    key-store: classpath:keystore.p12
+    key-store-type: pkcs12
+    key-store-password: *
+    key-alias: tomcat
+    enabled: true
 
 okta:
   oauth2:
@@ -16,13 +15,6 @@ okta:
     client-id: *
     client-secret: *
 
-#TODO: Try make use of IAM role on EC2 instance
 aws:
   accessKeyId: *
   secretAccessKey: *
-
-
-#TODO: enable SSL and sign requests/responses
-#server.ssl.enabled=true
-#server.ssl.key-store=classpath:store.jks
-#server.ssl.key-password=secret

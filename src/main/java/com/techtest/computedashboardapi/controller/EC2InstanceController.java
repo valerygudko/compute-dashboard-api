@@ -43,7 +43,7 @@ public class EC2InstanceController {
 
     @ApiOperation(httpMethod = "GET", value = "List of ec2 instances in a specified region", response = EC2InstanceResponse[].class)
     @ApiResponses({@ApiResponse(code = 200, message = "OK - List of running ec2 instances."),
-            @ApiResponse(code = 400, message = "Bad Request - Region must be specified and be of a valid value, page request and sorting request must have valid parameters")})
+            @ApiResponse(code = 400, message = "Bad Request - Region must be specified and be of a valid value, page request must have valid parameters")})
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<EC2InstanceResponse> get(@NotNull @RequestParam final String region, @Valid final PageRequest pageRequest, DirectFieldBindingResult bindingResult,
                                          @Valid final SortRequest sortRequest)

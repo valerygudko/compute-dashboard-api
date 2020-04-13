@@ -22,7 +22,7 @@ public class EC2InstanceResponseMapper {
                     .name(instance.tags().stream().findFirst().map(Tag::value).orElse(BLANK))
                     .id(instance.instanceId())
                     .az(instance.placement().availabilityZone())
-                    .type(instance.instanceType().name())
+                    .type(instance.instanceTypeAsString())
                     .state(instance.state().nameAsString())
                     .monitoring(instance.monitoring().stateAsString())
                     .publicIP(instance.publicIpAddress())

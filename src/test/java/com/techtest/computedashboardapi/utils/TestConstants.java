@@ -1,7 +1,6 @@
 package com.techtest.computedashboardapi.utils;
 
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.ec2.model.InstanceType;
 
 import java.time.LocalDateTime;
 
@@ -11,7 +10,7 @@ public class TestConstants {
     public static final String NAME_KEY = "Name";
     public static final String NAME = "Test";
     public static final String ID = "1A";
-    public static final String INSTANCE_TYPE = InstanceType.C1_MEDIUM.toString();
+    public static final String INSTANCE_TYPE = "t2.micro";
     public static final String STATE = "Some_state";
     public static final String MONITORING = "Enabled?";
     public static final String AZ = "Availability Zone";

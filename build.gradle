@@ -38,7 +38,6 @@ dependencies {
 	implementation "com.okta.spring:okta-spring-boot-starter:${okta_spring_boot_starter_version}"
 	compile "software.amazon.awssdk:aws-sdk-java:${aws_java_sdk_version}"
 	compile "io.swagger:swagger-annotations:${swagger_annotations_version}"
-	compile "org.springframework.boot:spring-boot-starter-actuator"
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	compile "com.massisframework:j-text-utils:${j_text_utils_version}"

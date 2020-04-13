@@ -26,7 +26,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWireMock(port = 0)
 @AutoConfigureMockMvc
-@WithMockUser(username = USER_NAME, password = PASSWORD, roles = USER_ROLE)
 class EC2InstanceControllerFunctionalTest {
 
     private static final String PATH = "/ec2-instances";
@@ -36,10 +35,26 @@ class EC2InstanceControllerFunctionalTest {
     private MockMvc mockMvc;
 
     @Test
+    @DisplayName("All requests are redirected to Okta for oauth")
+    void home_requestsRedirectedToOkta() throws Exception {
+        // given when then
+        mockMvc.perform(get(PATH)
+                .secure(true)
+                .param(REGION, DEFAULT_REGION_NAME)
+                .param("page", String.valueOf(1))
+                .param("size", String.valueOf(5))
+                .param("sort.attr", SortAttributes.state.name())
+                .param("sort.order", SortDirection.desc.name()))
+                .andExpect(status().is3xxRedirection());
+    }
+
+    @Test
     @DisplayName("Valid request must be accepted")
+    @WithMockUser(username = USER_NAME, password = PASSWORD, roles = USER_ROLE)
     void getEc2Instances_validRegionRequest_returns200() throws Exception {
         // given when then
         mockMvc.perform(get(PATH)
+                .secure(true)
                 .param(REGION, DEFAULT_REGION_NAME)
                 .param("page", String.valueOf(1))
                 .param("size", String.valueOf(5))
@@ -53,10 +68,12 @@ class EC2InstanceControllerFunctionalTest {
     @DisplayName("Request with invalid sorting parameters is a bad request")
     @ParameterizedTest(name = "Get 400 for sorting parameters with attribute: {0} and order: {1}")
     @CsvSource({",acs", "id,5", "name1,DESC", "name,"})
+    @WithMockUser(username = USER_NAME, password = PASSWORD, roles = USER_ROLE)
     void getEc2Instances_validRegion_invalidSortRequest_returns400(String sortAttr, String sortOrder) throws Exception {
 
         // when then
         mockMvc.perform(get(PATH).param(REGION, DEFAULT_REGION_NAME)
+                .secure(true)
                 .param("sort.attr", sortAttr)
                 .param("sort.order", sortOrder))
                 .andExpect(status().isBadRequest());

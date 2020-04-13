@@ -11,6 +11,7 @@ import com.techtest.computedashboardapi.service.PrintTableService;
 import com.techtest.computedashboardapi.service.RetrieveInstanceService;
 import com.techtest.computedashboardapi.service.SortService;
 import com.techtest.computedashboardapi.utils.TestLogging;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -66,6 +67,15 @@ class EC2InstanceControllerTest extends TestLogging {
     @Autowired
     private MockMvc mockMvc;
 
+    @DisplayName("Testing https redirect")
+    @Test
+    public void httpsRedirect() throws Exception {
+        mockMvc.perform(get(PATH).secure(false))
+                .andExpect(status().isFound())
+                .andExpect(result -> StringUtils.isNotEmpty(result.getResponse().getHeader("Location")))
+                .andExpect(result -> result.getResponse().getHeader("Location").startsWith("https://"));
+    }
+
     @Test
     @DisplayName("Request with valid region and no specific page request must be accepted")
     void getEc2Instances_validRegion_noPageRequest_returns200() throws Exception {
@@ -74,7 +84,8 @@ class EC2InstanceControllerTest extends TestLogging {
         given(retrieveInstanceService.getEc2Instances(eq(DEFAULT_REGION_NAME), any(PageRequest.class))).willReturn(ec2InstanceResponseList);
 
         // when then
-        mockMvc.perform(get(PATH).param(REGION, DEFAULT_REGION_NAME))
+        mockMvc.perform(get(PATH).param(REGION, DEFAULT_REGION_NAME)
+                .secure(true))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON));
 
@@ -98,7 +109,7 @@ class EC2InstanceControllerTest extends TestLogging {
         given(sortService.sort(eq(ec2InstanceResponseList), any(SortRequest.class))).willReturn(ec2InstanceResponseList);
 
         // when then
-        mockMvc.perform(get(PATH)
+        mockMvc.perform(get(PATH).secure(true)
                 .param(REGION, DEFAULT_REGION_NAME)
                 .param("page", String.valueOf(page_number))
                 .param("size", String.valueOf(page_size))
@@ -124,7 +135,7 @@ class EC2InstanceControllerTest extends TestLogging {
     @DisplayName("Request without region specified is a bad request")
     void getEc2Instances_noRegion_returns400() throws Exception {
         // when then
-        mockMvc.perform(get(PATH))
+        mockMvc.perform(get(PATH).secure(true))
                 .andExpect(status().isBadRequest());
 
         verify(retrieveInstanceService, never()).getEc2Instances(anyString(), any(PageRequest.class));
@@ -139,7 +150,7 @@ class EC2InstanceControllerTest extends TestLogging {
         given(retrieveInstanceService.getEc2Instances(eq(region), any(PageRequest.class))).willThrow(new RequestParsingException(new IllegalStateException(format("Unsupported parameter %s.", region))));
 
         // when then
-        mockMvc.perform(get(PATH).param(REGION, region))
+        mockMvc.perform(get(PATH).param(REGION, region).secure(true))
                 .andExpect(status().isBadRequest());
 
         verify(retrieveInstanceService).getEc2Instances(eq(region), any(PageRequest.class));
@@ -155,7 +166,8 @@ class EC2InstanceControllerTest extends TestLogging {
     void getEc2Instances_validRegion_invalidPageRequest_returns400(String pageSize, String pageNumber) throws Exception {
 
         // when then
-        mockMvc.perform(get(PATH).param(REGION, DEFAULT_REGION_NAME)
+        mockMvc.perform(get(PATH).secure(true)
+                .param(REGION, DEFAULT_REGION_NAME)
                 .param("page", pageNumber)
                 .param("size", pageSize))
                 .andExpect(status().isBadRequest());
@@ -177,8 +189,9 @@ class EC2InstanceControllerTest extends TestLogging {
         given(sortService.sort(eq(ec2InstanceResponseList), any(SortRequest.class))).willThrow(new RequestParsingException("Invalid sorting params"));
 
         // when then
-        mockMvc.perform(get(PATH).param(REGION, DEFAULT_REGION_NAME)
-        .param("sort.attr", sortAttr)
+        mockMvc.perform(get(PATH).secure(true)
+                .param(REGION, DEFAULT_REGION_NAME)
+                .param("sort.attr", sortAttr)
                 .param("sort.order", sortOrder))
                 .andExpect(status().isBadRequest());
 
@@ -197,7 +210,8 @@ class EC2InstanceControllerTest extends TestLogging {
         given(retrieveInstanceService.getEc2Instances(eq(DEFAULT_REGION_NAME), any(PageRequest.class))).willThrow(new CommunicationFailedException(Ec2Exception.builder().message("Error").build()));
 
         // when then
-        mockMvc.perform(get(PATH).param(REGION, DEFAULT_REGION_NAME))
+        mockMvc.perform(get(PATH).secure(true)
+                .param(REGION, DEFAULT_REGION_NAME))
                 .andExpect(status().is5xxServerError());
 
         verify(retrieveInstanceService).getEc2Instances(eq(DEFAULT_REGION_NAME), any(PageRequest.class));

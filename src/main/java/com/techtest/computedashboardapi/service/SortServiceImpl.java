@@ -1,6 +1,7 @@
 package com.techtest.computedashboardapi.service;
 
 import com.techtest.computedashboardapi.exception.RequestParsingException;
+import com.techtest.computedashboardapi.model.request.Sort;
 import com.techtest.computedashboardapi.model.request.SortAttributes;
 import com.techtest.computedashboardapi.model.request.SortDirection;
 import com.techtest.computedashboardapi.model.request.SortRequest;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import static com.techtest.computedashboardapi.model.request.SortDirection.asc;
 import static com.techtest.computedashboardapi.model.request.SortDirection.desc;
@@ -25,19 +27,22 @@ public class SortServiceImpl implements SortService {
     public List<EC2InstanceResponse> sort(List<EC2InstanceResponse> responseList, SortRequest sortRequest) throws RequestParsingException {
        String[] attributes;
        String[] order;
+       Sort sort = sortRequest.getSort();
+
+       if (Objects.isNull(sort)){
+           return responseList;
+       }
+
        try {
-           attributes = sortRequest.getSort().getAttr().split(DELIMITER);
-           order = sortRequest.getSort().getOrder().split(DELIMITER);
+           attributes = sort.getAttr().split(DELIMITER);
+           order = sort.getOrder().split(DELIMITER);
        } catch (NullPointerException ex){
            throw new RequestParsingException("Empty sorting attribute or order are not allowed");
        }
 
        validateSortingParameters(attributes, order);
-
        List<Comparator<EC2InstanceResponse>> comparators = getComparators(attributes, order);
-
        Comparator<EC2InstanceResponse> comparator = ComparatorUtils.chainedComparator(comparators);
-
        responseList.sort(comparator);
 
        return responseList;

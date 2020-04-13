@@ -5,16 +5,16 @@ server:
   ssl:
     key-store: classpath:keystore.p12
     key-store-type: pkcs12
-    key-store-password: *
+    key-store-password: ${server.ssl.key-store-password}
     key-alias: tomcat
     enabled: true
 
 okta:
   oauth2:
-    issuer: *
-    client-id: *
-    client-secret: *
+    issuer: ${okta.oauth2.issuer}
+    client-id: ${okta.oauth2.client-id}
+    client-secret: ${okta.oauth2.client-secret}
 
 aws:
-  accessKeyId: *
-  secretAccessKey: *
+  accessKeyId: ${aws.accessKeyId}
+  secretAccessKey: ${aws.secretAccessKey}

@@ -3,12 +3,14 @@ package com.techtest.computedashboardapi.controller;
 import com.techtest.computedashboardapi.exception.CommunicationFailedException;
 import com.techtest.computedashboardapi.exception.RequestParsingException;
 import com.techtest.computedashboardapi.exception.ResponseParsingException;
+import com.techtest.computedashboardapi.exception.RestExceptionHandler;
 import com.techtest.computedashboardapi.model.request.PageRequest;
 import com.techtest.computedashboardapi.model.request.SortRequest;
 import com.techtest.computedashboardapi.model.response.EC2InstanceResponse;
 import com.techtest.computedashboardapi.service.PrintTableService;
 import com.techtest.computedashboardapi.service.RetrieveInstanceService;
 import com.techtest.computedashboardapi.service.SortService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -27,6 +29,7 @@ import java.util.List;
 @RestController
 @RequestMapping(value = EC2InstanceController.PATH)
 @Slf4j
+@Api("Compute dashboard api for EC2 instances")
 public class EC2InstanceController {
 
     static final String PATH = "/ec2-instances";
@@ -41,9 +44,12 @@ public class EC2InstanceController {
         this.printTableService = printTableService;
     }
 
-    @ApiOperation(httpMethod = "GET", value = "List of ec2 instances in a specified region", response = EC2InstanceResponse[].class)
+    @ApiOperation(httpMethod = "GET", value = "List of ec2 instances in a specified region", notes =  "Sample request: <BASE_URL>", response = EC2InstanceResponse[].class)
     @ApiResponses({@ApiResponse(code = 200, message = "OK - List of running ec2 instances."),
-            @ApiResponse(code = 400, message = "Bad Request - Region must be specified and be of a valid value, page request must have valid parameters")})
+            @ApiResponse(code = 400, message = RestExceptionHandler.ERROR_CODE_REQUEST_PARSING),
+            @ApiResponse(code = 422, message = RestExceptionHandler.ERROR_CODE_RESPONSE_PARSING),
+            @ApiResponse(code = 500, message = RestExceptionHandler.ERROR_CODE_COMMUNICATION_FAILED)})
+
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<EC2InstanceResponse> get(@NotNull @RequestParam final String region, @Valid final PageRequest pageRequest, DirectFieldBindingResult bindingResult,
                                          @Valid final SortRequest sortRequest)

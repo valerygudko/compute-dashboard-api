@@ -43,9 +43,22 @@ class SortServiceImplTest {
 
     private List<EC2InstanceResponse> ec2InstanceResponseList = Arrays.asList(one, two, three);
 
+    @Test
+    @DisplayName("Sorting request is optional")
+    void sort_sortingRequestIsOptional_originalListIsReturned() throws RequestParsingException {
+        //given
+        given(sortRequest.getSort()).willReturn(null);
+
+        //when
+        List<EC2InstanceResponse> result = testObj.sort(ec2InstanceResponseList, sortRequest);
+
+        // then
+        assertThat(result).isEqualTo(ec2InstanceResponseList);
+    }
+
     @ParameterizedTest(name = "Get RequestParsingException for sorting parameters with attribute: {0} and order: {1}")
     @DisplayName("Empty sorting parameters must not be accepted")
-    @CsvSource({",acs", "name,", ","})
+    @CsvSource({",acs", "name,"})
     void sort_emptySortingParams_RequestParsingExceptionThrown(String attr, String order) {
         //given
         given(sortRequest.getSort()).willReturn(sort);

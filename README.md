@@ -11,7 +11,7 @@ infrastructure without having to give them access to the AWS Console.
 
 2. Ensure that you have:
    * java installed on your system (1.8)
-   * gradle (4.1)
+   * gradle (this was built with Gradle 6.3)
    * all secrets populated in application.yml:
         * okta application credentials
         * password for ssl keystore.p12 

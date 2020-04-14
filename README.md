@@ -12,12 +12,14 @@ infrastructure without having to give them access to the AWS Console.
 2. Ensure that you have:
    * java installed on your system (1.8)
    * gradle (4.1)
-   * all secrets populated in secrets.yml:
+   * all secrets populated in application.yml:
+        * okta application credentials
+        * password for ssl keystore.p12 
         * aws keys for authentication (in production for the application deployed to ec2 instance I would use IAM Role instead)
         
 3. Security
     * This application has SSL enabled for all calls with self-signed certificate located in `/resources/keystore.p12`
-    * It also uses oauth2 with Okta, so you'll have to login via your account.
+    * It also uses oauth2 with Okta.
 
 4. Run application using the following:
 

@@ -29,7 +29,7 @@ infrastructure without having to give them access to the AWS Console.
    
 ## API:
 
-   `GET /compute-dashboard-api/v1/ec2-instances?region=eu-west-2` - simplest request, uses default `page` size = 5 and referencing 1st page. No sorting to the result by default.
+   `GET /compute-dashboard-api/v1/ec2-instances?region=eu-west-2` - simplest request, uses default `page` size = 5 and referencing 1st page. Result by default are not sorted.
  
 * Request parameter. Paginating and sorting:
     
